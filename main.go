@@ -1,7 +1,7 @@
 // package main
 
 // import (
-// 	"learninggo/controllers"
+// 	"golambda/controllers"
 // 	"net/http"
 
 // 	"github.com/gin-gonic/gin"

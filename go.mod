@@ -1,4 +1,4 @@
-module learninggo
+module golambda
 
 go 1.20
 
