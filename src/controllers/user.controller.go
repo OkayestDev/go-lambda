@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"learninggo/structs"
+	"learninggo/src/structs"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

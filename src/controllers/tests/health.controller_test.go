@@ -1,7 +1,7 @@
 package testControllers
 
 import (
-	"learninggo/controllers"
+	"learninggo/src/controllers"
 	"testing"
 )
 
