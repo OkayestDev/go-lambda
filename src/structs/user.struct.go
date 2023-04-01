@@ -1,9 +1,6 @@
 package structs
 
 type User struct {
+	BaseModel
 	Name string
-}
-
-func (user User) GetName() string {
-	return user.Name
 }
