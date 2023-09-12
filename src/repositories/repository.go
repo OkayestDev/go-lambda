@@ -1,11 +1,12 @@
 package repositories
 
 import (
+	"golambda/src/constants"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-
-	"golambda/src/constants"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 // Initialize a session that the SDK will use to load
@@ -22,17 +23,32 @@ var sess = session.Must(session.NewSessionWithOptions(session.Options{
 var svc = dynamodb.New(sess)
 
 type RepositoryFuncs[T any] struct {
-	Get func(pk string, sk string) *dynamodb.GetItemOutput
+	Get func(pk string, sk string) T
+	// GetAll func(pk string) []T
+}
+
+func mapper[T any](items []map[string]*dynamodb.AttributeValue) []T {
+	var entities []T
+
+	for i := 0; i < len(items); i++ {
+		var entity T
+		dynamodbattribute.UnmarshalMap(items[i], &entity)
+		entities = append(entities, entity)
+	}
+
+	return entities
 }
 
 func Repository[T any](tableName string) RepositoryFuncs[T] {
-	var repo = RepositoryFuncs[T]{
-		Get: func(pk string, sk string) *dynamodb.GetItemOutput {
+	awsTableName := aws.String(tableName)
+
+	return RepositoryFuncs[T]{
+		Get: func(pk string, sk string) T {
 			result, err := svc.GetItem(&dynamodb.GetItemInput{
-				TableName: aws.String(tableName),
+				TableName: awsTableName,
 				Key: map[string]*dynamodb.AttributeValue{
 					"Pk": {
-						N: aws.String(pk),
+						S: aws.String(pk),
 					},
 					"Sk": {
 						S: aws.String(sk),
@@ -43,10 +59,25 @@ func Repository[T any](tableName string) RepositoryFuncs[T] {
 			if err != nil {
 				panic(err)
 			}
-
-			return result
+			items :=  []map[string]*dynamodb.AttributeValue { result.Item }
+			return mapper[T](items)[0]
 		},
-	}
 
-	return repo
+		// GetAll: func(pk string) {
+		// 	result, err := svc.Query(&dynamodb.QueryInput {
+		// 		TableName: awsTableName,
+		// 		KeyConditions: {
+		// 			"Pk": {
+		// 				S: aws.String(pk),
+		// 			},
+		// 		},
+		// 	})
+
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+
+		// 	return result
+		// },
+	}
 }
